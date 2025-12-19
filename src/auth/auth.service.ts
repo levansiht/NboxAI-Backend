@@ -23,13 +23,27 @@ export class AuthService {
           email: body.email,
           password: hashedPassword,
           name: body.name,
+          phoneNumber: body.phoneNumber,
           roleId: userRole.id,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          phoneNumber: true,
+          avatar: true,
+          status: true,
+          roleId: true,
+          createdAt: true,
+          updatedAt: true,
         },
       });
       return user;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-        throw new ConflictException('Email already in use');
+        const target = error.meta?.target as string[];
+        const field = target?.[0] || 'field';
+        throw new ConflictException(`${field.charAt(0).toUpperCase() + field.slice(1)} already in use`);
       }
       throw error;
     }
